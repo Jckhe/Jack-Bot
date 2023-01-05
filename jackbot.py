@@ -1,14 +1,18 @@
 import hikari
 import requests
-
-# Hi Opensea Devs, this is a very simple discord bot I developed from scratch!
-
-#Discord Bot Token
-bot = hikari.GatewayBot(token='')
+import os
+from dotenv import load_dotenv
+load_dotenv(override=False)
+token = os.environ.get('TOKEN')
+#intent
+bot = hikari.GatewayBot(
+    token,
+    intents=hikari.Intents.ALL_UNPRIVILEGED  # Add this
+    | hikari.Intents.MESSAGE_CONTENT,        # 
+)
 
 collections = []
 
-#This fetcher function is used to send a request to the Opensea API and retrieve said collection stats.
 def fetcher(slug):
     ##Fetch data from OS
     fetch_url = (f"https://api.opensea.io/api/v1/collection/{slug}/stats")
@@ -39,26 +43,68 @@ def fetcher(slug):
     os_url = (f"https://opensea.io/collection/{slug}")
     ##Embed for the data
     eth_suffix = " ETH"
+    ## Image Fetcher
+    os_thumbnail = image_fetcher(slug)
+    ## TITLE fetcher
+    os_title = title_fetcher(slug)
+    ## ROYALTY FETCHER
+    royalty = royalty_fetcher(slug)
     stats = (
-        hikari.Embed(title=slug, description='Click for Opensea', url=os_url, color="#FF0000")
-        .add_field(name='1-Day Volume:', value=f"{one_day_volume} ETH", inline=True)
-        .add_field(name='7-Day Volume:', value=f"{seven_day_volume} ETH", inline=True)
+        hikari.Embed(title=os_title, description='Click Above For Opensea', url=os_url, color="#FF0000")
         .add_field(name='Total Volume:', value=f"{total_volume} ETH", inline=True)
         .add_field(name='Total Supply:', value=supply, inline=True)
         .add_field(name='Number of Holders:', value=holders, inline=True)
         .add_field(name='Holder Ratio:', value=holder_ratio, inline=True)
+        .add_field(name='Royalty Fee', value=royalty, inline=True)
         .add_field(name='**Floor Price**:', value=f"**{floor_price} ETH**")
         .set_footer(text='coded by Ky#0801', icon='https://cdn-icons-png.flaticon.com/512/6699/6699255.png')
+        .set_thumbnail(os_thumbnail)
     )
     return stats
 
-#This function is used to ping when a user starts a message with: !j , the bot saves the slug following the command and then sends to the function above ^ which then is used to retrieve the said stats and is pinged back in an EMBED message.
+##This function belows pulls the thumbnail image link from the OS collection
+def image_fetcher(slug):
+    url = f"https://api.opensea.io/api/v1/collection/{slug}"
+    headers = {"Accept": "application/json"}
+    response = requests.request("GET", url, headers=headers)
+    image_dict = response.json()
+    final = (image_dict['collection']['primary_asset_contracts'][0]['image_url'])
+    return final
+
+##This function below pulls the TITLE of the collection
+def title_fetcher(slug):
+    url = f"https://api.opensea.io/api/v1/collection/{slug}"
+    headers = {"Accept": "application/json"}
+    response = requests.request("GET", url, headers=headers)
+    title_dict = response.json()
+    final = (title_dict['collection']['primary_asset_contracts'][0]['name'])
+    return final
+
+def royalty_fetcher(slug):
+    url = f"https://api.opensea.io/api/v1/collection/{slug}"
+    headers = {"Accept": "application/json"}
+    response = requests.request("GET", url, headers=headers)
+    royalty_dict = response.json()
+    finale = (royalty_dict['collection']['primary_asset_contracts'][0]['seller_fee_basis_points'])
+    final = str(finale)
+    royalty_fee = ""
+    if len(final) > 3:
+        royalty_fee = f"{final[:2]}.{final[2:3]}%"
+    else:
+        royalty_fee = f"{final[:1]}.{final[1:2]}%"
+    print(royalty_fee)
+    return royalty_fee
+
+
+
 @bot.listen()
 async def ping(event: hikari.GuildMessageCreateEvent) -> None:
+
     slug = ''
     if event.is_bot or not event.content:
         return
     if event.content.startswith("!j"):
+        event.message.respond("Test")
         slug = (event.content[3:]).lower()
         print(slug)
         theslug = fetcher(slug)
@@ -66,7 +112,41 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
             await event.message.respond("Unexpected error, try again.")
         else:
             await event.message.respond(theslug)
-
+    if event.content.startswith("!gayhand"):
+        await event.message.respond('https://cdn.discordapp.com/attachments/924131177261068309/968554255885680660/unknown.png')
     
-#Used to run the bot
+
+# @bot.listen()
+# async def ping(event: hikari.GuildMessageCreateEvent) -> None:
+#     waifu_webhook = 969715882408439858
+#     if event.author_id == waifu_webhook:
+#         await bot.rest.create_message(962503723362431036, embed=event.embeds[0])
+#         await bot.rest.create_message(921182971657060473, embed=event.embeds[0])
+
+# ##DiedNFT 
+# @bot.listen()
+# async def ping(event: hikari.GuildMessageCreateEvent) -> None:
+#     diednft = 953081479011913778
+#     if event.author_id == diednft:
+#         await bot.rest.create_message(962503723362431036, embed=event.embeds[0])
+#         await bot.rest.create_message(976298974707347526, embed=event.embeds[0])
+
+# ##Aoki
+# @bot.listen()
+# async def ping(event: hikari.GuildMessageCreateEvent) -> None:
+#     aoki = 976311123441754132
+#     if event.author_id == aoki:
+#         await bot.rest.create_message(962503723362431036, embed=event.embeds[0])
+#         await bot.rest.create_message(976257011975077938, embed=event.embeds[0])
+
+# #MOBY
+# @bot.listen()
+# async def ping(event: hikari.GuildMessageCreateEvent) -> None:
+#     my_channel_id = 982721287271096341
+#     if event.channel_id == my_channel_id:
+#         await bot.rest.create_message(962503723362431036, embed=event.embeds[0])
+#         await bot.rest.create_message(982720466743619614, embed=event.embeds[0])
+
+
+
 bot.run()
