@@ -118,9 +118,14 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
         else:
             await event.message.respond(theslug)
     if event.content.startswith("t"):
-         coin = (event.content[2:]).upper()
-         price = coinFetcher(coin)
-         await event.message.respond(f"{coin} price is {price}")
+         message = (event.content[2:]).upper()
+         coins = message.split(" ")
+         print("coin: ", coins)
+         response = ""
+         for coin in coins:
+            price = coinFetcher(coin)
+            response += f"**{coin}**: {price}\n"
+         await event.message.respond(response)
     
 
 # @bot.listen()
