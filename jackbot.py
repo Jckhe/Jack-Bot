@@ -13,6 +13,12 @@ bot = hikari.GatewayBot(
 
 collections = []
 
+def coinFetcher(coin):
+    headers = {'X-CoinAPI-Key' : '9EE70F0D-01EE-42DD-A17A-C3808CE9580A'}
+    coin = requests.request("GET", f"https://rest.coinapi.io/v1/exchangerate/{coin}/USD", headers=headers)
+    coin = coin.json()
+    return round(coin['rate'], 2)
+
 def fetcher(slug):
     ##Fetch data from OS
     fetch_url = (f"https://api.opensea.io/api/v1/collection/{slug}/stats")
@@ -104,7 +110,6 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
     if event.is_bot or not event.content:
         return
     if event.content.startswith("!j"):
-        event.message.respond("Test")
         slug = (event.content[3:]).lower()
         print(slug)
         theslug = fetcher(slug)
@@ -112,8 +117,10 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
             await event.message.respond("Unexpected error, try again.")
         else:
             await event.message.respond(theslug)
-    if event.content.startswith("!gayhand"):
-        await event.message.respond('https://cdn.discordapp.com/attachments/924131177261068309/968554255885680660/unknown.png')
+    if event.content.startswith("t"):
+         coin = (event.content[2:]).upper()
+         price = coinFetcher(coin)
+         await event.message.respond(f"{coin} price is {price}")
     
 
 # @bot.listen()
