@@ -1,20 +1,23 @@
 import hikari
 import requests
 import os
+import finnhub
 from dotenv import load_dotenv
 load_dotenv(override=False)
-token = os.environ.get('TOKEN')
+discord_token = os.environ.get('TOKEN')
+finnhub_token = os.environ.get('FINNHUB_TOKEN')
+coin_token = os.environ.get('COIN_TOKEN')
 #intent
 bot = hikari.GatewayBot(
-    token,
+    discord_token,
     intents=hikari.Intents.ALL_UNPRIVILEGED  # Add this
     | hikari.Intents.MESSAGE_CONTENT,        # 
 )
 
-collections = []
+finnhub_client = finnhub.Client(api_key=finnhub_token)
 
 def coinFetcher(coin):
-    headers = {'X-CoinAPI-Key' : '9EE70F0D-01EE-42DD-A17A-C3808CE9580A'}
+    headers = {'X-CoinAPI-Key' : coin_token}
     coin = requests.request("GET", f"https://rest.coinapi.io/v1/exchangerate/{coin}/USD", headers=headers)
     coin = coin.json()
     return round(coin['rate'], 2)
@@ -124,9 +127,23 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
          response = ""
          for coin in coins:
             price = coinFetcher(coin)
-            response += f"**{coin}**: {price}\n"
+            response += f"**{coin}**: ${price}\n"
          await event.message.respond(response)
-    
+    if event.content.startswith("p"):
+        message = (event.content[2:]).upper()
+        print("stocks: ", message)
+        price = finnhub_client.quote(message)
+        print("price: ", price)
+        output = (
+            hikari.Embed(title=f"{message} price", description='', color="#FF0000")
+            .add_field(name="Current Price: ", value=f"${price['c']}", inline=True)
+            .add_field(name="Change", value=price['d'], inline=True)
+            .add_field(name="% Change", value=price['dp'], inline=True)
+            .set_footer(text='yammy', icon='https://cdn-icons-png.flaticon.com/512/6699/6699255.png')
+        )
+        await event.message.respond(output)
+        
+        
 
 # @bot.listen()
 # async def ping(event: hikari.GuildMessageCreateEvent) -> None:
