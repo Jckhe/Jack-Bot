@@ -8,4 +8,8 @@ def coinFetcher(coin):
     headers = {'X-CoinAPI-Key' : coin_token}
     coin = requests.request("GET", f"https://rest.coinapi.io/v1/exchangerate/{coin}/USD", headers=headers)
     coin = coin.json()
-    return round(coin['rate'], 4)
+    print(coin['rate'])
+    if (coin['rate'] < 1):
+      return round(coin['rate'], 4)
+    else:
+      return round(coin['rate'], 2)
