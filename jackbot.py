@@ -1,7 +1,6 @@
 import hikari
 import requests
 import os
-import lightbulb
 from dotenv import load_dotenv
 from nft import fetcher
 from crypto import coinFetcher
