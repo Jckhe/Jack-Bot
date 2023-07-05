@@ -20,7 +20,7 @@ bot = hikari.GatewayBot(
 
 @bot.listen()
 async def ping(event: hikari.GuildMessageCreateEvent) -> None:
-    if event.content and event.content.startswith("t"):
+    if event.content and event.content.startswith("t") and event.content[1] == " ":
         message = (event.content[2:]).upper()
         coins = message.split(" ")
         response = ""
@@ -29,7 +29,7 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
             response += f"**{coin}**: ${price}\n"
         await event.message.respond(response)
     
-    if event.content and event.content.startswith("p"):
+    if event.content and event.content.startswith("p") and event.content[1] == " ":
         message = (event.content[2:]).upper()
         stocks = message.split()
         for stock in stocks:
