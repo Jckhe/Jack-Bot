@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from nft import fetcher
 from crypto import coinFetcher
-from stocks import stockFetcher
+from stocks import stockFetcher, afterHoursFetcher
 load_dotenv(override=False)
 discord_token = os.environ.get('TOKEN')
 admin_token=os.environ.get('ADMIN')
@@ -34,6 +34,13 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
         stocks = message.split()
         for stock in stocks:
             embed = stockFetcher(stock, event.message)
+            await event.message.respond(embed=embed)
+
+    if event.content and event.content.startswith("pa") and event.content[2] == " ":
+        message = (event.content[3:]).upper()
+        stocks = message.split()
+        for stock in stocks:
+            embed = afterHoursFetcher(stock, event.message)
             await event.message.respond(embed=embed)
 
 bot.run()
