@@ -1,5 +1,4 @@
 from dotenv import load_dotenv
-from polygon import RESTClient
 from dateutility import get_weekday_or_previous_friday
 import requests
 import json
@@ -43,7 +42,7 @@ def stockFetcher(stock, message):
     embed.add_field(name="Current Price", value=f"${price['c']}", inline=True)
     embed.add_field(name="Change", value=price.get('d', 'N/A'), inline=True)
     embed.add_field(name="% Change", value=price.get('dp', 'N/A'), inline=True)
-    embed.set_footer(text='yammy', icon='https://cdn-icons-png.flaticon.com/512/6699/6699255.png')
+    embed.set_footer(text='yummy', icon='https://cdn-icons-png.flaticon.com/512/6699/6699255.png')
 
     return embed
 
