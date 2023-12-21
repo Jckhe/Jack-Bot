@@ -21,7 +21,7 @@ def coinFetcher(coin):
    price = float(data['data']['amount'])
    print(price)
    if price < 1:
-    price = round(price, 3)
+    price = round(price, 4)
    else:
     price = round(price, 2)
 
