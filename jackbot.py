@@ -3,7 +3,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from nft import fetcher
-from crypto import coinFetcher
+from crypto import coinFetcher, priorityCoins
 from stocks import stockFetcher, afterHoursFetcher
 load_dotenv(override=False)
 discord_token = os.environ.get('TOKEN')
@@ -26,7 +26,10 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
         response = ""
         for coin in coins:
             price = coinFetcher(coin)
-            response += f"**{coin}**: ${price}\n"
+            if coin in priorityCoins:
+                response = f"**{coin}** (cb): ${price}\n"
+            else:
+                response += f"**{coin}**: ${price}\n"
         await event.message.respond(response)
     
     if event.content and event.content.startswith("p") and event.content[1] == " ":
