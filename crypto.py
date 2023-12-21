@@ -5,7 +5,7 @@ load_dotenv(override=False)
 coin_token = os.environ.get('COIN_TOKEN')
 
 
-priorityCoins = ['ETH', 'BTC', 'FET', 'UOS', 'INJ']
+priorityCoins = ['ETH', 'BTC', 'FET', 'INJ']
 def coinFetcher(coin):
     headers = {'X-CoinAPI-Key' : coin_token}
     coin = requests.request("GET", f"https://rest.coinapi.io/v1/exchangerate/{coin}/USD", headers=headers)
