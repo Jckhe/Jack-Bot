@@ -8,8 +8,6 @@ coin_token = os.environ.get('COIN_TOKEN')
 priorityCoins = ['ETH', 'BTC', 'FET', 'UOS', 'INJ']
 def coinFetcher(coin):
     headers = {'X-CoinAPI-Key' : coin_token}
-    if coin in priorityCoins:
-      return coinbaseFetcher(coin)
     coin = requests.request("GET", f"https://rest.coinapi.io/v1/exchangerate/{coin}/USD", headers=headers)
     coin = coin.json()
     print(coin['rate'])
