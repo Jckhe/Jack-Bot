@@ -19,7 +19,7 @@ def coinFetcher(coin):
    response = requests.request("GET", f"https://api.coinbase.com/v2/prices/{coin}-USD/buy")
    data = response.json()
    price = float(data['data']['amount'])
-   print(price)
+   print(f"Logging: {coin} Price: {price} Res: {data['data']['amount']}")
    if price < 1:
     price = round(price, 4)
    else:
