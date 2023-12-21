@@ -20,6 +20,34 @@ bot = hikari.GatewayBot(
 
 @bot.listen()
 async def ping(event: hikari.GuildMessageCreateEvent) -> None:
+    if event.content and event.content.startswith("!t"):
+        print(event.content)
+        if len(event.content) > 2:
+            print(event.content[3:6])
+            if event.content[3:6] == 'add':
+                coinToAdd = event.content[7:]
+                if coinToAdd == "":
+                    await event.message.respond("No coins given") 
+                    return
+                priorityCoins.append(coinToAdd.upper())
+                await event.message.respond(f"{coinToAdd.upper()} added successfully!") 
+                print(priorityCoins)
+            elif event.content[3:6] == 'del':
+                coinToDel = event.content[7:]
+                if coinToDel == "":
+                    await event.message.respond("No coins given") 
+                    return
+                priorityCoins.remove(coinToDel.upper())
+                await event.message.respond(f"{coinToDel.upper()} deleted successfully!")     
+                print(priorityCoins) 
+        else:
+            response = "List of coins watching on coinbase: \n"
+            for coin in priorityCoins:
+                response += f" ‣ ***{coin}***\n"
+            print(response)
+            await event.message.respond(response)    
+
+        
     if event.content and event.content.startswith("t") and event.content[1] == " ":
         message = (event.content[2:]).upper()
         coins = message.split(" ")
