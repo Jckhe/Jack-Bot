@@ -3,7 +3,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from nft import fetcher
-from crypto import coinFetcher, priorityCoins, coinbaseFetcher
+from crypto import coinFetcher, priorityCoins, coinbaseFetcher, coinChecker
 from stocks import stockFetcher, afterHoursFetcher
 load_dotenv(override=False)
 discord_token = os.environ.get('TOKEN')
@@ -21,17 +21,37 @@ bot = hikari.GatewayBot(
 @bot.listen()
 async def ping(event: hikari.GuildMessageCreateEvent) -> None:
     if event.content and event.content.startswith("!t"):
-        print(event.content)
+        if (len(event.content) == 2):
+            response = "Watchlist: \n"
+            for coin, details in priorityCoins.items():
+                on_coinbase = details.get('coinbase', False)
+                if on_coinbase:
+                    price = coinbaseFetcher(coin)
+                    response += f"**{coin}**: ${price}\n"
+                else:
+                    price = coinFetcher(coin)
+                    response += f"**{coin}**: ${price}\n"
+            await event.message.respond(response)    
         if len(event.content) > 2:
-            print(event.content[3:6])
             if event.content[3:6] == 'add':
-                coinToAdd = event.content[7:]
-                if coinToAdd == "":
+                coinsToAdd = event.content[7:]
+                print("coins to add: ", coinsToAdd)
+                if not coinsToAdd:
                     await event.message.respond("No coins given") 
                     return
-                priorityCoins.append(coinToAdd.upper())
-                await event.message.respond(f"{coinToAdd.upper()} added successfully!") 
-                print(priorityCoins)
+                coinsToAdd = coinsToAdd.split(" ")
+                print("coins to add: ", coinsToAdd)
+                for coin in coinsToAdd:
+                    print("coin: ", coin)
+                    if coin in priorityCoins:
+                        await event.message.respond(f"{coin} already exists.")
+                        continue
+                    else:
+                        coinCheck = coinChecker(coin)
+                        if coinCheck == False:
+                            await event.message.respond(f"{coin} is invalid/does not exist.")
+                            return
+                await event.message.respond("Coins added. Use !tlist to see watchlist.")
             elif event.content[3:6] == 'del':
                 coinToDel = event.content[7:]
                 if coinToDel == "":
@@ -40,12 +60,13 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
                 priorityCoins.remove(coinToDel.upper())
                 await event.message.respond(f"{coinToDel.upper()} deleted successfully!")     
                 print(priorityCoins) 
-        else:
-            response = "List of coins watching on coinbase: \n"
-            for coin in priorityCoins:
-                response += f" ‣ ***{coin}***\n"
-            print(response)
-            await event.message.respond(response)    
+            elif event.content[2:6] == 'list':
+                embed = hikari.Embed(title="Coins on watchlist", description='Use !t to get prices on all the coins at once', color="#FF0000")
+                for coin, details in priorityCoins.items():
+                    on_coinbase = details.get('coinbase', False)
+                    status = "Watching on Coinbase" if on_coinbase else ""
+                    embed.add_field(name=f"{coin} ‣ {status}", value="-")
+                await event.message.respond(embed=embed)
 
         
     if event.content and event.content.startswith("t") and event.content[1] == " ":
