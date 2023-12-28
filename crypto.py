@@ -18,7 +18,7 @@ def coinFetcher(coin):
     data = response.json()
     
     if 'error' in data:
-      return {'error': data['error']}
+      return False
 
     price = data['rate']
 
@@ -33,7 +33,7 @@ def coinbaseFetcher(coin):
    data = response.json()
    print(data)
    if 'error' in data:
-    return {'error': data['error']}
+    return False
   
    price = float(data['data']['amount'])
 

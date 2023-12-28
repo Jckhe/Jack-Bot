@@ -75,12 +75,15 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
         response = ""
         print(coins)
         for coin in coins:
-            if coin in priorityCoins:
-                price = coinbaseFetcher(coin)
+            price = coinbaseFetcher(coin)
+            if price != False:
                 response += f"**{coin}** (cb): ${price}\n"
             else:
                 price = coinFetcher(coin)
-                response += f"**{coin}**: ${price}\n"
+                if price != False:
+                    response += f"**{coin}**: ${price}\n"
+                else:
+                    response += f"**{coin}**: Can't find coin on coinbase or coinapi"
         await event.message.respond(response)
     
     if event.content and event.content.startswith("p") and event.content[1] == " ":
