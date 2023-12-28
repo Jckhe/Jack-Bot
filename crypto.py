@@ -62,3 +62,16 @@ def coinChecker(coin):
     return False
   
 
+def messageCreator(coins, response):
+  for coin in coins:
+    price = coinbaseFetcher(coin)
+    if price != False:
+      response += f"**{coin}**: ${price}\n"
+    else:
+      price = coinFetcher(coin)
+      if price != False:
+        response += f"**{coin}**: ${price}\n"
+      else:
+        response += f"**{coin}**: Can't find coin on coinbase or coinapi\n"
+    
+  return response

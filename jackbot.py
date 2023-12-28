@@ -3,7 +3,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from nft import fetcher
-from crypto import coinFetcher, priorityCoins, coinbaseFetcher, coinChecker
+from crypto import coinFetcher, priorityCoins, coinbaseFetcher, coinChecker, messageCreator
 from stocks import stockFetcher, afterHoursFetcher
 load_dotenv(override=False)
 discord_token = os.environ.get('TOKEN')
@@ -23,14 +23,8 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
     if event.content and event.content.startswith("!t"):
         if (len(event.content) == 2):
             response = "Watchlist: \n"
-            for coin, details in priorityCoins.items():
-                on_coinbase = details.get('coinbase', False)
-                if on_coinbase:
-                    price = coinbaseFetcher(coin)
-                    response += f"**{coin}**: ${price}\n"
-                else:
-                    price = coinFetcher(coin)
-                    response += f"**{coin}**: ${price}\n"
+            coins = list(priorityCoins.keys())
+            response = messageCreator(coins, response)
             await event.message.respond(response)    
         if len(event.content) > 2:
             if event.content[3:6] == 'add':
@@ -74,16 +68,7 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
         coins = message.split(" ")
         response = ""
         print(coins)
-        for coin in coins:
-            price = coinbaseFetcher(coin)
-            if price != False:
-                response += f"**{coin}**: ${price}\n"
-            else:
-                price = coinFetcher(coin)
-                if price != False:
-                    response += f"**{coin}**: ${price}\n"
-                else:
-                    response += f"**{coin}**: Can't find coin on coinbase or coinapi"
+        response = messageCreator(coins, response)
         await event.message.respond(response)
     
     if event.content and event.content.startswith("p") and event.content[1] == " ":
