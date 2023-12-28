@@ -77,7 +77,7 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
         for coin in coins:
             price = coinbaseFetcher(coin)
             if price != False:
-                response += f"**{coin}** (cb): ${price}\n"
+                response += f"**{coin}**: ${price}\n"
             else:
                 price = coinFetcher(coin)
                 if price != False:
