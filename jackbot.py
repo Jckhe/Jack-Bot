@@ -2,9 +2,16 @@ import hikari
 import requests
 import os
 from dotenv import load_dotenv
+#NFT Imports
 from nft import fetcher
-from crypto import coinFetcher, priorityCoins, coinbaseFetcher, coinChecker, messageCreator
-from stocks import stockFetcher, afterHoursFetcher
+#Cryptocurrency Imports
+from crypto_fetcher.crypto import coinFetcher, priorityCoins, coinbaseFetcher, coinChecker, messageCreator
+from message_handlers.watchlist_handler import watchlist_handler
+from message_handlers.crypto_handler import crypto_handler
+#Stocks Imports
+from stock_fetcher.stocks import stockFetcher, afterHoursFetcher
+from message_handlers.stock_handler import stock_handler
+
 load_dotenv(override=False)
 discord_token = os.environ.get('TOKEN')
 admin_token=os.environ.get('ADMIN')
@@ -17,72 +24,24 @@ bot = hikari.GatewayBot(
     | hikari.Intents.MESSAGE_CONTENT,        # 
 )
 
+#PREFIXES for message commands/creation
+WATCHLIST_PREFIX = "!t"
+CRYPTO_PREFIX = "t "
+STOCK_PREFIX = "p "
+
 
 @bot.listen()
 async def ping(event: hikari.GuildMessageCreateEvent) -> None:
-    if event.content and event.content.startswith("!t"):
-        if (len(event.content) == 2):
-            response = "Watchlist: \n"
-            coins = list(priorityCoins.keys())
-            response = messageCreator(coins, response)
-            await event.message.respond(response)    
-        if len(event.content) > 2:
-            if event.content[3:6] == 'add':
-                coinsToAdd = event.content[7:]
-                print("coins to add: ", coinsToAdd)
-                if not coinsToAdd:
-                    await event.message.respond("No coins given") 
-                    return
-                coinsToAdd = coinsToAdd.split(" ")
-                print("coins to add: ", coinsToAdd)
-                for coin in coinsToAdd:
-                    print("coin: ", coin)
-                    if coin in priorityCoins:
-                        await event.message.respond(f"{coin} already exists.")
-                        continue
-                    else:
-                        coinCheck = coinChecker(coin)
-                        if coinCheck == False:
-                            await event.message.respond(f"{coin} is invalid/does not exist.")
-                            return
-                await event.message.respond("Coins added. Use !tlist to see watchlist.")
-            elif event.content[3:6] == 'del':
-                coinToDel = event.content[7:]
-                if coinToDel == "":
-                    await event.message.respond("No coins given") 
-                    return
-                priorityCoins.remove(coinToDel.upper())
-                await event.message.respond(f"{coinToDel.upper()} deleted successfully!")     
-                print(priorityCoins) 
-            elif event.content[2:6] == 'list':
-                embed = hikari.Embed(title="Coins on watchlist", description='Use !t to get prices on all the coins at once', color="#FF0000")
-                for coin, details in priorityCoins.items():
-                    on_coinbase = details.get('coinbase', False)
-                    status = "Watching on Coinbase" if on_coinbase else ""
-                    embed.add_field(name=f"{coin} ‣ {status}", value="-")
-                await event.message.respond(embed=embed)
+    content = event.content
+    message = event.message
 
-        
-    if event.content and event.content.startswith("t") and event.content[1] == " ":
-        message = (event.content[2:]).upper()
-        coins = message.split(" ")
-        response = ""
-        print(coins)
-        response = messageCreator(coins, response)
-        await event.message.respond(response)
+    if content and content.startswith(WATCHLIST_PREFIX):
+        await watchlist_handler(event, content[2:])
+      
+    if content and content.startswith(CRYPTO_PREFIX):
+        await crypto_handler(event, (content[2:]).upper())
     
-    if event.content and event.content.startswith("p") and event.content[1] == " ":
-        message = (event.content[2:]).upper()
-        stocks = message.split()
-        for stock in stocks:
-            embed = stockFetcher(stock, event.message)
-            await event.message.respond(embed=embed)
-
-    if event.content and event.content.startswith("pa") and event.content[2] == " ":
-        message = (event.content[3:]).upper()
-        stocks = message.split()
-        for stock in stocks:
-            embed = afterHoursFetcher(stock, event.message)
-            await event.message.respond(embed=embed)
+    if content and content.startswith(STOCK_PREFIX):
+        await stock_handler(event, (content[2:]).upper())
 
 bot.run()
