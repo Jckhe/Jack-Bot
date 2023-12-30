@@ -1,18 +1,19 @@
-from crypto_fetcher.crypto import priorityCoins, messageCreator
+from crypto_fetcher.crypto import priorityCoins, messageCreator, coinChecker
+import hikari
 
 async def watchlist_handler(event, content):
     message = event.message
-
     if len(content) == 0:
         response = "Watchlist: \n"
         coins = list(priorityCoins.keys())
         response = messageCreator(coins, response)
         await message.respond(response)
     elif len(content) > 0:
-        action = content[:3]
-        if action == 'add':
-            coinsToAdd = content[4:]
-
+        action = content[1:len(content)]
+        print(action)
+        if action.startswith('add'):
+            coinsToAdd = content[5:]
+            print(coinsToAdd)
             if not coinsToAdd:
                 await message.respond("No coins given")
                 return
@@ -29,10 +30,10 @@ async def watchlist_handler(event, content):
                         await message.respond(f"{coin} is invalid/does not exist.")
                         return
 
-            await message.respond("Coins added. Use !tlist to see watchlist.")
+            await message.respond("Coins added. Use !t list to see watchlist.")
 
-        elif action == 'del':
-            coinToDel = content[4:]
+        elif action.startswith('del'):
+            coinToDel = content[5:]
             if coinToDel == "":
                 await message.respond("No coins given")
                 return
@@ -41,14 +42,12 @@ async def watchlist_handler(event, content):
                 await message.respond(f"{coinToDel.upper()} does not exist in the watchlist.")
                 return
 
-            priorityCoins.remove(coinToDel.upper())
+            del priorityCoins[coinToDel.upper()]
             await message.respond(f"{coinToDel.upper()} deleted successfully!")
             print(priorityCoins)
 
-        elif action == 'lis':
+        elif action == 'list':
             embed = hikari.Embed(title="Coins on watchlist", description='Use !t to get prices on all the coins at once', color="#FF0000")
             for coin, details in priorityCoins.items():
-                on_coinbase = details.get('coinbase', False)
-                status = "Watching on Coinbase" if on_coinbase else ""
-                embed.add_field(name=f"{coin} ‣ {status}", value="-")
+                embed.add_field(name=f"{coin}", value="-")
             await message.respond(embed=embed)
