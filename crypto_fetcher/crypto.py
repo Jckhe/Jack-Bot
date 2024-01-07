@@ -92,12 +92,12 @@ def messageCreator(coins, response):
     
     if price != False:
       percentage = percentageChange(price, coin)
-      response += f"**{coin}**: ${price} ({percentage}) \n"
+      response += f"**{coin}**: ${price}  `{percentage}` \n"
     else:
       price = coinFetcher(coin)
       percentage = percentageChange(price, coin)
       if price != False:
-        response += f"**{coin}**: ${price} ({percentage}) \n"
+        response += f"**{coin}**: ${price}  `{percentage}` \n"
       else:
         response += f"**{coin}**: Can't find coin on coinbase or coinapi\n"
     
