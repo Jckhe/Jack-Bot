@@ -12,6 +12,11 @@ priorityCoins = {
   'FET': {'coinbase': True},
 }
 
+derekCoins = {
+  'BTC': {'coinbase': True},
+  'ETH': {'coinbase': True},
+}
+
 
 def coinFetcher(coin):
     headers = {'X-CoinAPI-Key' : coin_token}
@@ -70,17 +75,17 @@ def percentageChange(currentPrice, coin):
 
 
   #check if coin is valid or check if its coinbase- if it is add it to the list
-def coinChecker(coin):
+def coinChecker(coin, watchlist=priorityCoins):
   exists_on_coinbase = coinbaseFetcher(coin)
 
   if isinstance(exists_on_coinbase, (int, float)):
-    priorityCoins[f"{coin.upper()}"] = {'coinbase': True}
+    watchlist[f"{coin.upper()}"] = {'coinbase': True}
     return
   
   exists_on_coinapi = coinFetcher(coin)
 
   if isinstance(exists_on_coinapi, (int, float)):
-    priorityCoins[f"{coin.upper()}"] = {'coinbase': False}
+    watchlist[f"{coin.upper()}"] = {'coinbase': False}
     return
   else:
     return False

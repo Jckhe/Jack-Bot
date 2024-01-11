@@ -7,6 +7,7 @@ from nft import fetcher
 #Cryptocurrency Imports
 from crypto_fetcher.crypto import coinFetcher, priorityCoins, coinbaseFetcher, coinChecker, messageCreator
 from message_handlers.watchlist_handler import watchlist_handler
+from message_handlers.derek_handler import derek_handler
 from message_handlers.crypto_handler import crypto_handler
 #Stocks Imports
 from stock_fetcher.stocks import stockFetcher, afterHoursFetcher
@@ -28,6 +29,7 @@ bot = hikari.GatewayBot(
 WATCHLIST_PREFIX = "!t"
 CRYPTO_PREFIX = "t "
 STOCK_PREFIX = "p "
+DEREK_PREFIX = "!d"
 
 
 @bot.listen()
@@ -37,7 +39,10 @@ async def ping(event: hikari.GuildMessageCreateEvent) -> None:
 
     if content and content.startswith(WATCHLIST_PREFIX):
         await watchlist_handler(event, content[2:])
-      
+
+    if content and content.startswith(DEREK_PREFIX):
+        await derek_handler(event, content[2:])
+
     if content and content.startswith(CRYPTO_PREFIX):
         await crypto_handler(event, (content[2:]).upper())
     
